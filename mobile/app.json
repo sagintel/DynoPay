@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "DynoPay",
+    "slug": "dynopay",
+    "version": "1.0.0",
+    "scheme": "dynopay",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#121212",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.dynopay.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "DynoPay uses Face ID to confirm payments."
+      }
+    },
+    "android": {
+      "package": "com.dynopay.app",
+      "predictiveBackGestureEnabled": false,
+      "adaptiveIcon": {
+        "backgroundColor": "#121212",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-font",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "DynoPay uses Face ID to confirm payments."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#121212"
+        }
+      ],
+      [
+        "expo-system-ui"
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

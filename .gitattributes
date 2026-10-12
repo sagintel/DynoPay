@@ -1,0 +1,21 @@
+# Normalize line endings: LF in the repo, OS-native on checkout
+* text=auto eol=lf
+
+# Keep binary files as-is
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.sqlite binary
+*.sqlite-shm binary
+*.sqlite-wal binary
+*.jks binary
+*.p12 binary
+*.p8 binary
+*.mobileprovision binary

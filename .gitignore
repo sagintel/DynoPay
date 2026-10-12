@@ -7,11 +7,13 @@ coverage/
 
 # backend
 backend/data/
+backend/package-lock.json
 
 # expo
 mobile/.expo/
 mobile/dist/
 mobile/web-build/
+mobile/yarn.lock
 mobile/ios/
 mobile/android/
 mobile/expo-env.d.ts

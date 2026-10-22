@@ -24,11 +24,15 @@ export function createSequelize(url = env.DATABASE_URL): Sequelize {
     if (storage !== ':memory:') fs.mkdirSync(path.dirname(path.resolve(storage)), { recursive: true });
     // Use better-sqlite3 instead of sqlite3 — it ships prebuilt binaries compatible with older glibc
     // (required for Render free tier which runs Debian with glibc < 2.38).
-    const modulePath = require.resolve('better-sqlite3');
+    // Sequelize's SQLite connection manager does `new this.lib.Database(path)`, so it expects
+    // the module to expose a `Database` property — wrap the default export to satisfy that shape.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const BetterSqlite3 = require('better-sqlite3') as new (...args: unknown[]) => unknown;
+    const dialectModule = { Database: BetterSqlite3 };
     const sequelize = new Sequelize({
       ...common,
       dialect: 'sqlite',
-      dialectModulePath: modulePath,
+      dialectModule,
       storage,
     } as Options);
     sequelize.addHook('afterConnect', (connection) => {

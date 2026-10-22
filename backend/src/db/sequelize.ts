@@ -22,15 +22,13 @@ export function createSequelize(url = env.DATABASE_URL): Sequelize {
     const sequelize = new Sequelize({
       ...common,
       dialect: 'sqlite',
+      dialectModule: await import('better-sqlite3').then((m) => m.default ?? m),
       storage,
-      // SQLite has a single writer: wait for the lock instead of failing, and retry if still busy.
-      retry: { match: [/SQLITE_BUSY/], max: 5 },
+      // better-sqlite3 is synchronous; no busy-retry needed but keep the pragma hook.
     });
-    // Pragmas are per connection, and Sequelize opens one connection per transaction on SQLite.
     sequelize.addHook('afterConnect', (connection) => {
-      const conn = connection as { configure?: (option: string, value: number) => void; run?: (sql: string) => void };
-      conn.configure?.('busyTimeout', 5000);
-      conn.run?.('PRAGMA foreign_keys = ON;');
+      const conn = connection as { pragma?: (sql: string) => void };
+      conn.pragma?.('foreign_keys = ON');
     });
     return sequelize;
   }

@@ -75,14 +75,11 @@ export default function SignIn() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(250).duration(500)} style={{ gap: space.md, width: '100%', maxWidth: 420, alignSelf: 'center' }}>
-        <Text variant="label" color={colors.textMuted} style={{ textAlign: 'center' }}>Personal</Text>
-        <Button label="Continue with PayPal" icon="paypal" variant="ivory" loading={busy === 'paypal'} disabled={!config?.paypal || !!busy} onPress={() => void run('paypal')} />
-        <Text variant="label" color={colors.textMuted} style={{ textAlign: 'center', marginTop: 6 }}>Business</Text>
+        <Text variant="label" color={colors.textMuted} style={{ textAlign: 'center' }}>Business</Text>
         <Button label="Sign in as a merchant (REST API)" icon="shield" variant="secondary" disabled={!!busy} onPress={() => router.push('/merchant')} />
         {config?.devLogin ? <Button label="Explore the demo account" variant="ghost" loading={busy === 'demo'} disabled={!!busy} onPress={() => void run('demo')} /> : null}
-        {config && !config.paypal ? (
-          <Text variant="caption" color={colors.textFaint} style={{ textAlign: 'center' }}>PayPal sign-in is not configured on this server yet.</Text>
-        ) : null}
+        {/* PayPal personal sign-in is temporarily disabled */}
+        {/* config?.paypal && <Button label="Continue with PayPal" icon="paypal" variant="ivory" loading={busy === 'paypal'} disabled={!config?.paypal || !!busy} onPress={() => void run('paypal')} /> */}
         {error ? <Text variant="caption" color={colors.negative} style={{ textAlign: 'center' }}>{error}</Text> : null}
         <Text variant="caption" color={colors.textFaint} style={{ textAlign: 'center', marginTop: 8 }}>
           Dyno<Text variant="caption" color={colors.accent}>.</Text> · <Text variant="caption" color={colors.textFaint}>Every payment needs your confirmation.</Text>

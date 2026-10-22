@@ -168,12 +168,23 @@ export function CanvasProvider({ screen, children }: { screen: 'home' | 'cards';
         const { last } = await api.lastView(screen);
         if (cancelled) return;
         if (last) {
-          committed.current = last.spec;
-          setSpec(last.spec);
-          setMode('result');
-          setEntities([]);
-          learnPeople(last.spec);
-          return;
+          // Guard against a stale lastView from a different account type (e.g. personal session
+          // cached while a merchant logs in). A merchant home always has a merchant_overview block;
+          // a personal home never does. If the types don't match, skip the cache and load fresh.
+          const hasMerchantBlock = last.spec.blocks.some((b) => b.type === 'merchant_overview');
+          const isMerchantScreen = screen === 'home' && user?.accountType === 'business';
+          const isPersonalScreen = screen === 'home' && user?.accountType !== 'business';
+          const stale = (isMerchantScreen && !hasMerchantBlock) || (isPersonalScreen && hasMerchantBlock);
+          if (!stale) {
+            committed.current = last.spec;
+            setSpec(last.spec);
+            setMode('result');
+            setEntities([]);
+            learnPeople(last.spec);
+            return;
+          }
+          // Stale — clear it so we never see it again, then fall through to load the right layout.
+          void api.clearLastView(screen).catch(() => undefined);
         }
       } catch {
         /* fall back to the layout */

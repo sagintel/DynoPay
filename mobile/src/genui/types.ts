@@ -325,6 +325,8 @@ export type MerchantOverview = {
   unpaidInvoices: { count: number; total: number } | null;
   openDisputes: number | null;
   capabilities: { key: string; label: string; enabled: boolean }[];
+  /** Human-readable hints for missing PayPal REST app scopes, shown as warnings in the UI. */
+  capabilityWarnings?: string[];
 };
 
 export type PayPalTx = {

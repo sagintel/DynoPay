@@ -353,15 +353,29 @@ export async function merchantBalance(client: PayPalClient) {
 /** One call for the merchant home: each part degrades independently if a capability is off. */
 export async function merchantOverview(user: User) {
   const { client, conn } = await merchantClient(user);
+  const missingScopes: string[] = [];
+
   const safe = async <T>(cap: Capability, fn: () => Promise<T>): Promise<T | null> => {
-    if (!hasCapability(conn.scopes, cap)) return null;
+    if (!hasCapability(conn.scopes, cap)) {
+      missingScopes.push(cap);
+      return null;
+    }
     try {
-      return await guard(conn, fn);
+      // 8-second hard cap per individual PayPal call so the home screen never hangs indefinitely.
+      return await guard(conn, () =>
+        Promise.race([
+          fn(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`PayPal ${cap} timed out`)), 8_000),
+          ),
+        ]),
+      );
     } catch (err) {
       logger.info({ cap, err: (err as Error).message }, 'merchant overview part unavailable');
       return null;
     }
   };
+
   const [balance, txs, invoices, disputes] = await Promise.all([
     safe('reporting', () => merchantBalance(client)),
     safe('reporting', () => recentPayPalTransactions(client, 30, 500)),
@@ -369,6 +383,15 @@ export async function merchantOverview(user: User) {
     safe('disputes', () => pp.listDisputes(client)),
   ]);
   const currency = balance?.primary?.currency ?? txs?.[0]?.currency ?? user.currency;
+
+  // Human-readable hints for missing scopes so the mobile can show actionable guidance.
+  const scopeHints: Record<string, string> = {
+    reporting: 'Enable "Transaction Search" in your PayPal REST app to see your balance and transaction history.',
+    invoicing: 'Enable "Invoicing" in your PayPal REST app to see invoices here.',
+    disputes: 'Enable "Disputes" in your PayPal REST app to see open disputes here.',
+  };
+  const capabilityWarnings = missingScopes.map((cap) => scopeHints[cap] ?? `Enable "${cap}" in your PayPal REST app.`);
+
   return {
     businessName: conn.businessName,
     environment: conn.environment,
@@ -377,5 +400,7 @@ export async function merchantOverview(user: User) {
     unpaidInvoices: invoices ? { count: invoices.total_items ?? invoices.items?.length ?? 0, total: (invoices.items ?? []).reduce((s, i) => s + num(i.due_amount ?? i.amount), 0) } : null,
     openDisputes: disputes ? (disputes.items ?? []).filter((d) => d.status !== 'RESOLVED').length : null,
     capabilities: capabilityList(conn.scopes),
+    /** Non-empty when some PayPal REST app permissions are not enabled. Shown as notices in the mobile app. */
+    capabilityWarnings,
   };
 }

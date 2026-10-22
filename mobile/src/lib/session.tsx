@@ -90,12 +90,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signInDemo = useCallback(async () => {
     const res = await api.devLogin();
     await session.save(res);
+    // Clear any last view from a previous session so the correct default layout loads fresh.
+    await Promise.all([api.clearLastView('home'), api.clearLastView('cards')]).catch(() => undefined);
     setUser(res.user);
   }, []);
 
   const signInMerchant = useCallback(async (creds: MerchantCredentials) => {
     const res = await api.merchantSignIn(creds);
     await session.save(res);
+    // Clear any last view from a previous session so the merchant dashboard loads fresh.
+    await Promise.all([api.clearLastView('home'), api.clearLastView('cards')]).catch(() => undefined);
     setUser({ ...res.user, merchant: res.merchant });
   }, []);
 

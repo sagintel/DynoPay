@@ -36,7 +36,24 @@ function Stat({ label, value, onPress }: { label: string; value: string; onPress
 export function MerchantOverviewBlock({ block }: B<'merchant_overview'>) {
   const { dispatch } = useCanvas();
   const d = block.data;
-  if (!d) return null;
+
+  // No data yet — show a welcome card with a setup prompt instead of rendering nothing.
+  if (!d) {
+    return (
+      <View style={styles.card}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Icon name="paypal" size={16} color={colors.accent} />
+          <Text variant="label" color={colors.textMuted}>PayPal Business</Text>
+        </View>
+        <NoticeBlock block={{ type: 'notice', tone: 'info', text: 'Enable Transaction Search for your REST app to see your PayPal balance and activity here. Open Settings → PayPal to check your connection.' }} />
+        <Tap onPress={() => void dispatch({ type: 'navigate', screen: 'settings' })} style={styles.setupBtn}>
+          <Icon name="shield" size={14} color={colors.accent} />
+          <Text variant="label" color={colors.accent}>Check connection in Settings</Text>
+        </Tap>
+      </View>
+    );
+  }
+
   const primary = d.balance?.primary;
   return (
     <View style={{ gap: space.lg }}>
@@ -47,6 +64,20 @@ export function MerchantOverviewBlock({ block }: B<'merchant_overview'>) {
         </View>
         <Pill text={d.environment === 'live' ? 'Live' : 'Sandbox'} tone={d.environment === 'live' ? 'positive' : 'muted'} />
       </View>
+
+      {/* Capability warnings — shown when PayPal REST app scopes are missing */}
+      {d.capabilityWarnings?.length ? (
+        <View style={{ gap: 6 }}>
+          {d.capabilityWarnings.map((w: string, i: number) => (
+            <Tap key={i} onPress={() => void dispatch({ type: 'navigate', screen: 'settings' })} style={styles.warning}>
+              <Icon name="warning" size={14} color={colors.warning} />
+              <Text variant="caption" color={colors.textMuted} style={{ flex: 1 }}>{w}</Text>
+              <Icon name="chevron-right" size={13} color={colors.textFaint} />
+            </Tap>
+          ))}
+        </View>
+      ) : null}
+
       {primary ? (
         <View style={{ gap: 4 }}>
           <Text variant="caption" color={colors.textMuted}>PayPal balance</Text>
@@ -73,7 +104,12 @@ const asChart = (s: SalesSummary): ChartData => ({
 
 export function MerchantSalesBlock({ block }: B<'merchant_sales'>) {
   const s = block.data;
-  if (!s) return null;
+  if (!s) return (
+    <View style={styles.card}>
+      <Text variant="label" color={colors.textMuted}>{block.title ?? 'Sales · last 30 days'}</Text>
+      <Text variant="caption" color={colors.textFaint}>Enable Transaction Search to see your sales chart.</Text>
+    </View>
+  );
   return (
     <ChartFrame
       title={block.title ?? tr('Sales · last {x} days', { x: s.days })}
@@ -336,6 +372,8 @@ const styles = StyleSheet.create({
   pill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
   stat: { gap: 4, padding: 12, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.hairline },
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: space.lg, gap: space.lg, borderWidth: 1, borderColor: colors.hairline },
+  setupBtn: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  warning: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.hairline },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11 },
   divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.hairline },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 38, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border },

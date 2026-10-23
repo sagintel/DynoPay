@@ -20,8 +20,6 @@
     "@langchain/google-genai": "^2.3.2",
     "@langchain/openai": "^1.6.2",
     "@modelcontextprotocol/sdk": "^1.32.1",
-    "@types/better-sqlite3": "^9.6.0",
-    "better-sqlite3": "^13.0.3",
     "compression": "^1.8.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",

@@ -36,6 +36,8 @@ export function createSequelize(url = env.DATABASE_URL): Sequelize {
   return new Sequelize(url, {
     ...common,
     pool: { max: 10, min: 0, idle: 10_000 },
-    dialectOptions: url.startsWith('postgres') && url.includes('sslmode=require') ? { ssl: { require: true } } : undefined,
+    dialectOptions: url.startsWith('postgres')
+      ? { ssl: { require: true, rejectUnauthorized: false } }
+      : undefined,
   });
 }

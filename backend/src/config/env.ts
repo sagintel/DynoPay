@@ -58,6 +58,7 @@ function load(): Env {
   if (env.NODE_ENV === 'production') {
     if (env.JWT_SECRET.startsWith('change-me')) throw new Error('Set a real JWT_SECRET in production.');
     if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_CLIENT_SECRET) throw new Error('PayPal credentials are required in production.');
+    if (env.DATABASE_URL === 'sqlite:./data/dynopay.sqlite') throw new Error('Set DATABASE_URL to a PostgreSQL URL in production (SQLite is development-only).');
     // Dev login is never available in production, whatever the flag says.
     env.ALLOW_DEV_LOGIN = false;
   }

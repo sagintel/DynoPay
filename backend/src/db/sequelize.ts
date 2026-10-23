@@ -5,8 +5,13 @@ import { env } from '../config/env.js';
 import { logger } from '../lib/logger.js';
 
 /**
- * One connection factory for every supported dialect:
- *   sqlite:./data/dynopay.sqlite   sqlite::memory:
+ * One connection factory for every supported dialect.
+ *
+ * Environment defaults (overridden by DATABASE_URL):
+ *   development → sqlite:./data/dynopay.sqlite  (no extra packages needed)
+ *   production  → must be a postgres:// URL      (set via Render's linked database)
+ *
+ * To switch dialect, change DATABASE_URL only — no code changes needed:
  *   postgres://user:pass@host:5432/db   (requires `pg`)
  *   mysql://user:pass@host:3306/db      (requires `mysql2`)
  */
